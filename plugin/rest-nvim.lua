@@ -19,15 +19,12 @@ local dependencies = {
     ["nvim-nio"] = "rest.nvim will not work asynchronously",
     xml2lua = "rest.nvim will be completely unable to use XML bodies in your requests",
     mimetypes = "rest.nvim will be completely unable to recognize the file type of external body files",
-    ["fidget.nvim"] = "rest.nvim will be completely unable to show request progress messages",
 }
 for dep, err in pairs(dependencies) do
     local found_dep
     -- Both nvim-nio and lua-curl has a different Lua module name
     if dep == "nvim-nio" then
         found_dep = package.searchpath("nio", package.path)
-    elseif dep == "fidget.nvim" then
-        found_dep = package.searchpath("fidget", package.path)
     else
         found_dep = package.searchpath(dep, package.path)
     end
@@ -39,8 +36,6 @@ for dep, err in pairs(dependencies) do
         -- Both nvim-nio and lua-curl has a different Lua module name
         if dep == "nvim-nio" then
             found_dep2 = pcall(require, "nio")
-        elseif dep == "fidget.nvim" then
-            found_dep2 = pcall(require, "fidget")
         else
             found_dep2 = pcall(require, dep)
         end

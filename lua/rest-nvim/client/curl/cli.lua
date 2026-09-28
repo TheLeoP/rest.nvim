@@ -14,7 +14,7 @@ local log = require("rest-nvim.logger")
 local curl_utils = require("rest-nvim.client.curl.utils")
 local utils = require("rest-nvim.utils")
 local config = require("rest-nvim.config")
-local progress = require("fidget.progress")
+local notify = require("mini.notify")
 
 ---@see vim.system
 ---@param args string[] curl CLI arguments
@@ -357,33 +357,24 @@ end
 ---@param request rest.Request Request data to be passed to cURL
 ---@return nio.control.Future future Future containing rest.Response
 function curl.request(request)
-    local progress_handle = progress.handle.create({
-        title = "Executing",
-        message = "Executing request...",
-        lsp_client = { name = "rest.nvim" },
-    })
+    local notification = notify.add("rest.nvim: Executing request...")
     local future = nio.control.future()
     local args = builder.build(request)
     curl.cli(args, function(sc)
         if sc.code ~= 0 then
             local message = "Something went wrong when making the request with cURL:\n"
                 .. curl_utils.curl_error(sc.code)
-            progress_handle:cancel()
+            notify.remove(notification)
             log.error(message)
             future.set_error(message)
             return
         end
         vim.schedule(function()
-            progress_handle:report({
-                message = "Parsing response...",
-            })
+            notify.update(notification, { msg = "rest.nvim: Parsing response..." })
             local response = parser.parse_verbose(vim.split(sc.stderr, "\n"))
             response.body = sc.stdout
             future.set(response)
-            progress_handle:report({
-                message = "Success",
-            })
-            progress_handle:finish()
+            notify.remove(notification)
         end)
     end, {
         -- TODO(boltless): parse by chunk from here
