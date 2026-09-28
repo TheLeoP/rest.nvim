@@ -76,16 +76,6 @@ CLI.
 >
 > You need lazy.nvim higher than v11 to install rockspec dependencies
 
-<!-- TODO: I'm not sure packer supporst tree-sitter installation via luarocks -->
-<!-- ### [packer.nvim](https://github.com/wbthomason/packer.nvim) -->
-<!---->
-<!-- ```lua -->
-<!-- use { -->
-<!--   "rest-nvim/rest.nvim", -->
-<!--   rocks = { "nvim-nio", "mimetypes", "xml2lua", "fidget.nvim", "tree-sitter-http" }, -->
-<!-- } -->
-<!-- ``` -->
-
 ### Setup
 
 No `.setup()` call is needed!
@@ -106,6 +96,7 @@ vim.g.rest_nvim = {
 ### Default configuration
 
 <!-- default-config:start -->
+
 ```lua
 ---rest.nvim default configuration
 ---@class rest.Config
@@ -209,6 +200,7 @@ local default_config = {
     _log_level = vim.log.levels.WARN,
 }
 ```
+
 <!-- default-config:end -->
 
 ## Usage
@@ -238,7 +230,7 @@ conflicts with any of your existing ones.
 ### Commands
 
 | User Command           | Behavior                                             |
-|------------------------|------------------------------------------------------|
+| ---------------------- | ---------------------------------------------------- |
 | `:Rest open`           | Open result pane                                     |
 | `:Rest run`            | Run request under the cursor                         |
 | `:Rest run {name}`     | Run request with name `{name}`                       |
