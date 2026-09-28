@@ -17,7 +17,6 @@ local rest_nvim_deps = {}
 -- Locate dependencies
 local dependencies = {
     ["nvim-nio"] = "rest.nvim will not work asynchronously",
-    xml2lua = "rest.nvim will be completely unable to use XML bodies in your requests",
     mimetypes = "rest.nvim will be completely unable to recognize the file type of external body files",
 }
 for dep, err in pairs(dependencies) do
