@@ -371,7 +371,7 @@ function curl.request(request)
         end
         vim.schedule(function()
             notify.update(notification, { msg = "rest.nvim: Parsing response..." })
-            local response = parser.parse_verbose(vim.split(sc.stderr, "\n"))
+            local response = parser.parse_verbose(vim.split(sc.stderr, "\n", { trimempty = true }))
             response.body = sc.stdout
             future.set(response)
             notify.remove(notification)
