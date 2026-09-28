@@ -2,9 +2,8 @@
 
 # rest.nvim
 
-![License](https://img.shields.io/github/license/NTBBloodbath/rest.nvim?style=for-the-badge)
-![Neovim version](https://img.shields.io/badge/Neovim%200.10.1+-brightgreen?style=for-the-badge)
-[![LuaRocks](https://img.shields.io/luarocks/v/NTBBloodbath/rest.nvim?style=for-the-badge&logo=lua&color=blue)](https://luarocks.org/modules/NTBBloodbath/rest.nvim)
+![License](https://img.shields.io/github/license/TheLeoP/rest.nvim?style=for-the-badge)
+![Neovim version](https://img.shields.io/badge/Neovim%200.12.5+-brightgreen?style=for-the-badge)
 
 [Features](#features) • [Install](#install) • [Usage](#usage) • [Contribute](#contribute)
 
@@ -25,7 +24,7 @@ CLI.
 
 > [!IMPORTANT]
 >
-> If you are facing issues, please [report them](https://github.com/rest-nvim/rest.nvim/issues/new) so we can work in a fix together :)
+> If you are facing issues, please [report them](https://github.com/TheLeoP/rest.nvim/issues/new) so we can work in a fix together :)
 
 ## Features
 
@@ -41,27 +40,33 @@ CLI.
 
 ## Install
 
-> [!NOTE]
-> Check [this troubleshooting guide](./INSTALLATION_TROUBLESHOOTING.md) if you have any issues while
-> installing this plugin.
-
 ### Dependencies
 
-- Neovim >= 0.10.1
+- Neovim >= 0.12.5
 - `curl`
-- [tree-sitter-http] (if you use `lazy.nvim`)
+- [tree-sitter-http]
 
-### [rocks.nvim](https://github.com/nvim-neorocks/rocks.nvim) (recommended)
+### `vim.pack`
 
-```vim
-:Rocks install rest.nvim
+```lua
+vim.pack.add({
+    "https://github.com/TheLeoP/rest.nvim",
+    "https://github.com/tree-sitter/tree-sitter"
+})
+local already_installed = require("nvim-treesitter").get_installed "parsers"
+local to_install = iter({ "http" })
+  :filter(function(p)
+    return not vim.tbl_contains(already_installed, p)
+  end)
+  :totable()
+if #to_install > 0 then require("nvim-treesitter").install(to_install) end
 ```
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-  "rest-nvim/rest.nvim",
+  "TheLeoP/rest.nvim",
   dependencies = {
     "nvim-treesitter/nvim-treesitter",
     opts = function (_, opts)
@@ -72,14 +77,9 @@ CLI.
 }
 ```
 
-> [!IMPORTANT]
->
-> You need lazy.nvim higher than v11 to install rockspec dependencies
-
 ### Setup
 
-No `.setup()` call is needed!
-Just set your options via `vim.g.rest_nvim`. It is fully documented and typed internally so you get
+You can set your options either via `vim.g.rest_nvim` or `require("rest-nvim").setup()`. They are fully documented and typed internally so you get
 a good experience during autocompletion :)
 
 ```lua
@@ -326,7 +326,7 @@ Here is a preview of the component working :)
 
 ## Contribute
 
-1. Fork it (https://github.com/rest-nvim/rest.nvim/fork)
+1. Fork it (https://github.com/TheLeoP/rest.nvim/fork)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'feat: add some feature'`)
 4. Push to the branch (`git push -u origin my-new-feature`)
@@ -338,8 +338,7 @@ Here is a preview of the component working :)
 > semantic versioning and these help with automatic releases, please use this type of convention
 > when submitting changes to the project.
 
-Tests can be ran via `make test`. You must have `luarocks` installed to install dependencies. The
-test runner through `make test` will automatically install all required dependencies.
+Tests can be ran via `make test`.
 
 ## Related software
 
