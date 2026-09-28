@@ -12,7 +12,6 @@ local clients = {}
 
 clients.clients = {
     require("rest-nvim.client.curl_cli"),
-    -- require("rest-nvim.client.libcurl"),
 }
 
 function clients.register_client(client)
