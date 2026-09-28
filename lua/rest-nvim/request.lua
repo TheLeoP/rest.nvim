@@ -58,8 +58,6 @@ local function run_request(req)
     })
     _G.rest_request = nil
 
-    -- NOTE: wrap with schedule to do vim stuffs outside of lua callback loop (`on_exit`
-    -- callback from `vim.system()` call)
     ui.update({ request = req })
     local ok, res = pcall(client.request(req).wait)
     if not ok then
