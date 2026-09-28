@@ -17,7 +17,6 @@ local rest_nvim_deps = {}
 -- Locate dependencies
 local dependencies = {
     ["nvim-nio"] = "rest.nvim will not work asynchronously",
-    mimetypes = "rest.nvim will be completely unable to recognize the file type of external body files",
 }
 for dep, err in pairs(dependencies) do
     local found_dep
