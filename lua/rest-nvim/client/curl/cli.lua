@@ -9,21 +9,25 @@
 
 local curl = {}
 
-local nio = require("nio")
 local log = require("rest-nvim.logger")
 local curl_utils = require("rest-nvim.client.curl.utils")
 local utils = require("rest-nvim.utils")
 local config = require("rest-nvim.config")
 local notify = require("mini.notify")
+local async = vim.async or require("async")
 
+---@type fun(cmd: string[], opts, vim.SystemOpts?): vim.SystemCompleted
+local system = async.wrap(3, vim.system)
+---@type fun()
+local schedule = async.wrap(1, vim.schedule)
+
+---@async
 ---@see vim.system
 ---@param args string[] curl CLI arguments
----Called asynchronously when the luarocks command exits.
----Receives SystemCompleted object, see return type of SystemObj:wait().
----@param on_exit fun(sc: vim.SystemCompleted)
 ---@param opts? vim.SystemOpts
+---@return vim.SystemCompleted
 ---@package
-function curl.cli(args, on_exit, opts)
+function curl.cli(args, opts)
     opts = opts or {}
     opts.detach = false
     opts.text = true
@@ -32,17 +36,20 @@ function curl.cli(args, on_exit, opts)
     curl_cmd = vim.list_extend(curl_cmd, args)
     log.info(curl_cmd)
     opts.detach = false
-    on_exit = vim.schedule_wrap(on_exit)
-    local ok, e = pcall(vim.system, curl_cmd, opts, on_exit)
+    local ok, out_or_err = pcall(system, curl_cmd, opts)
     if not ok then
         ---@type vim.SystemCompleted
-        local sc = {
+        local out = {
             code = 99999,
             signal = 0,
-            stderr = "Failed to invoke curl: " .. e,
+            stderr = "Failed to invoke curl: " .. out_or_err,
         }
-        on_exit(sc)
+        return out
     end
+
+    -- TODO(TheLeoP): probably should left this to the caller just like `vim.system`
+    schedule()
+    return out_or_err
 end
 
 ---@private
@@ -353,35 +360,26 @@ function builder.build_command(req)
     return base_cmd .. " " .. args:join(" ")
 end
 
+---@async
 ---Send request via `curl` cli
 ---@param request rest.Request Request data to be passed to cURL
----@return nio.control.Future future Future containing rest.Response
+---@return rest.Response
 function curl.request(request)
     local notification = notify.add("rest.nvim: Executing request...")
-    local future = nio.control.future()
     local args = builder.build(request)
-    curl.cli(args, function(sc)
-        if sc.code ~= 0 then
-            local message = "Something went wrong when making the request with cURL:\n"
-                .. curl_utils.curl_error(sc.code)
-            notify.remove(notification)
-            log.error(message)
-            future.set_error(message)
-            return
-        end
-        vim.schedule(function()
-            notify.update(notification, { msg = "rest.nvim: Parsing response..." })
-            local response = parser.parse_verbose(vim.split(sc.stderr, "\n", { trimempty = true }))
-            response.body = sc.stdout
-            future.set(response)
-            notify.remove(notification)
-        end)
-    end, {
-        -- TODO(boltless): parse by chunk from here
-        -- stdout = function (err, chunk) end,
-        -- stderr = function (err, chunk) end,
-    })
-    return future
+    local sc = curl.cli(args)
+    if sc.code ~= 0 then
+        local message = "Something went wrong when making the request with cURL:\n" .. curl_utils.curl_error(sc.code)
+        notify.remove(notification)
+        log.error(message)
+        error(message)
+    end
+
+    notify.update(notification, { msg = "rest.nvim: Parsing response..." })
+    local response = parser.parse_verbose(vim.split(sc.stderr, "\n", { trimempty = true }))
+    response.body = sc.stdout
+    notify.remove(notification)
+    return response
 end
 
 curl.builder = builder

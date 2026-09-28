@@ -44,6 +44,8 @@
 ---
 ---@brief ]]
 
+local async = vim.async or require("async")
+
 ---@package
 ---@class RestCmd
 ---The command implementation
@@ -235,7 +237,7 @@ local rest_command_tbl = {
                 if not req_node then
                     return
                 end
-                require("nio").run(function()
+                async.run(function()
                     local req = parser().parse(req_node, 0)
                     if not req then
                         logger().error("failed to parse request")
@@ -255,7 +257,7 @@ local rest_command_tbl = {
                 if not req_node then
                     return
                 end
-                require("nio").run(function()
+                async.run(function()
                     local req = parser().parse(req_node, 0)
                     if not req then
                         logger().error("failed to parse request")

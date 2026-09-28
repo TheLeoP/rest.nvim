@@ -13,7 +13,10 @@ local Context = require("rest-nvim.context").Context
 local utils = require("rest-nvim.utils")
 local logger = require("rest-nvim.logger")
 local jar = require("rest-nvim.cookie_jar")
-local nio = require("nio")
+local async = vim.async or require("async")
+
+---@type fun(opts?, vim.ui.input.Opts): string
+local input = async.wrap(1, vim.ui.input)
 
 ---@alias Source integer|string Buffer or string which the `node` is extracted
 
@@ -467,13 +470,12 @@ function parser.parse(node, source, ctx)
                 if var_description == "" then
                     var_description = nil
                 end
-                ---@diagnostic disable-next-line: missing-fields
-                local input = nio.ui.input({
+                local value = input({
                     prompt = (var_description or ("Enter value for `%s`"):format(var_name)) .. ": ",
                     default = ctx:resolve(var_name),
                 })
-                if input then
-                    ctx:set_local(var_name, input)
+                if value then
+                    ctx:set_local(var_name, value)
                 end
             end
         elseif child_type == "variable_declaration" then

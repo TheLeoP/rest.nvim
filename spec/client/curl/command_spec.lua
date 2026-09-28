@@ -2,7 +2,6 @@
 
 require("spec.minimal_init")
 
-local nio = require("nio")
 local spy = require("luassert.spy")
 
 local function open(path)
@@ -26,14 +25,14 @@ describe(":Rest curl", function()
 end)
 
 describe(":Rest run", function()
-    nio.tests.it("notify on request failed", function()
+    it("notify on request failed", function()
         open("spec/examples/basic_get.http")
         -- go to line number 6
         vim.cmd("6")
         local spy_notify = spy.on(vim, "notify")
         -- run request
         vim.cmd(":Rest run")
-        nio.sleep(100)
+        vim.wait(100)
         assert
             ---@diagnostic disable-next-line: undefined-field
             .spy(spy_notify)

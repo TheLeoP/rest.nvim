@@ -7,10 +7,10 @@ local utils = require("rest-nvim.utils")
 local logger = require("rest-nvim.logger")
 local config = require("rest-nvim.config")
 local ui = require("rest-nvim.ui.result")
-local nio = require("nio")
 local jar = require("rest-nvim.cookie_jar")
 local clients = require("rest-nvim.client")
 local Context = require("rest-nvim.context").Context
+local async = vim.async or require("async")
 
 ---@class rest.Request.Body
 ---@field __TYPE "json"|"xml"|"raw"|"graphql"|"multipart_form_data"|"external"
@@ -41,6 +41,7 @@ local Context = require("rest-nvim.context").Context
 ---@type rest.Request|nil
 local rest_nvim_last_request = nil
 
+---@async
 ---@param req rest.Request
 local function run_request(req)
     logger.debug("running request:" .. req.name)
@@ -59,24 +60,23 @@ local function run_request(req)
     _G.rest_request = nil
 
     ui.update({ request = req })
-    local ok, res = pcall(client.request(req).wait)
+    local ok, maybe_res = pcall(client.request, req)
     if not ok then
-        logger.error("request failed")
+        logger.error(("request failed: %s"):format(maybe_res))
         vim.notify("request failed. See `:Rest logs` for more info", vim.log.levels.ERROR, { title = "rest.nvim" })
         return
     end
-    ---@cast res rest.Response
     logger.info("request success")
 
     -- run request handler scripts
     logger.debug(("run %d handers"):format(#req.handlers))
     vim.iter(req.handlers):each(function(f)
-        f(res)
+        f(maybe_res)
     end)
     logger.info("handler done")
 
     _G.rest_request = req
-    _G.rest_response = res
+    _G.rest_response = maybe_res
     vim.api.nvim_exec_autocmds("User", {
         pattern = { "RestResponse", "RestResponsePre" },
     })
@@ -84,10 +84,10 @@ local function run_request(req)
     _G.rest_response = nil
 
     -- update cookie jar
-    jar.update_jar(req.url, res)
+    jar.update_jar(req.url, maybe_res)
 
     -- update result UI
-    ui.update({ response = res })
+    ui.update({ response = maybe_res })
     -- FIXME(boltless): return future to pass the command state
 end
 
@@ -104,7 +104,7 @@ function M.run(name)
         ctx:load_file(vim.b._rest_nvim_env_file)
     end
     local bufnr = vim.api.nvim_get_current_buf()
-    nio.run(function()
+    async.run(function()
         local req = parser.parse(req_node, bufnr, ctx)
         if not req then
             logger.error("failed to parse request")
@@ -126,7 +126,7 @@ function M.run_last()
         vim.notify("No last request found", vim.log.levels.WARN, { title = "rest.nvim" })
         return false
     end
-    nio.run(function()
+    async.run(function()
         run_request(req)
     end)
 end

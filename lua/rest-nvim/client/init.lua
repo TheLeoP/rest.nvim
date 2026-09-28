@@ -6,7 +6,7 @@ local clients = {}
 ---@class rest.Client
 ---@field name string name of the client
 ---Sends request and return the response asynchronously
----@field request fun(req: rest.Request):nio.control.Future
+---@field request fun(req: rest.Request):rest.Response
 ---Check if client can handle given request
 ---@field available fun(req: rest.Request):boolean
 
