@@ -10,9 +10,9 @@ jobs:
   luacheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: nebularg/actions-luacheck@v1.1.2
         with:
-          files: 'lua/'
-          config: 'https://raw.githubusercontent.com/NTBBloodbath/rest.nvim/main/.luacheckrc'
-          annotate: 'error'
+          files: "lua/"
+          config: "https://raw.githubusercontent.com/TheLeoP/rest.nvim/main/.luacheckrc"
+          annotate: "error"
