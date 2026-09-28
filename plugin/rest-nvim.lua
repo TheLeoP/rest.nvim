@@ -8,23 +8,14 @@ if vim.g.loaded_rest_nvim then
     return
 end
 
---- Dependencies management ---
--------------------------------
--- This variable is going to hold the dependencies state (whether they are found or not),
--- to be used later by the `health.lua` module
-local rest_nvim_deps = {}
-
 -- Locate dependencies
 local dependencies = {
     ["nvim-nio"] = "rest.nvim will not work asynchronously",
 }
 for dep, err in pairs(dependencies) do
     local found_dep
-    -- Both nvim-nio and lua-curl has a different Lua module name
     if dep == "nvim-nio" then
         found_dep = package.searchpath("nio", package.path)
-    else
-        found_dep = package.searchpath(dep, package.path)
     end
 
     -- If the dependency could not be find in the Lua package.path then try to load it using pcall
@@ -38,30 +29,15 @@ for dep, err in pairs(dependencies) do
             found_dep2 = pcall(require, dep)
         end
 
-        rest_nvim_deps[dep] = {
-            found = false,
-            error = err,
-        }
         if not found_dep2 then
             vim.notify(
                 "WARN: Dependency '" .. dep .. "' was not found. " .. err,
                 vim.log.levels.ERROR,
                 { title = "rest.nvim" }
             )
-        else
-            rest_nvim_deps[dep] = {
-                found = true,
-                error = err,
-            }
         end
-    else
-        rest_nvim_deps[dep] = {
-            found = true,
-            error = err,
-        }
     end
 end
-vim.g.rest_nvim_deps = rest_nvim_deps
 
 require("rest-nvim.autocmds").setup()
 require("rest-nvim.commands").setup()
