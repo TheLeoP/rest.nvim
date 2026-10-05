@@ -18,10 +18,10 @@ local uv = vim.uv or vim.loop
 ---@param str string Binary string to be encoded
 ---@param only_necessary? boolean Encode only necessary characters
 ---@return string
-function utils.escape(str, only_necessary)
+function utils.url_encode(str, only_necessary)
     local ignore = "%w%-%.%_%~%+"
     if only_necessary then
-        ignore = ignore .. "%:%/%?%=%&%#%@"
+        ignore = ignore .. "%:%/%?%=%&%#%@%$"
     end
     local pattern = "([^" .. ignore .. "])"
     local encoded = string.gsub(str, pattern, function(c)

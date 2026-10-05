@@ -57,7 +57,7 @@ function autocmds.setup()
             local req = _G.rest_request
             local hooks = config.request.hooks
             if hooks.encode_url then
-                req.url = utils.escape(req.url, true)
+                req.url = utils.url_encode(req.url, true)
             end
             if hooks.user_agent ~= "" then
                 local header_empty = not req.headers["user-agent"] or #req.headers["user-agent"] < 1
